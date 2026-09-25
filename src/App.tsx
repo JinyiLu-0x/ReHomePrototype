@@ -1300,7 +1300,7 @@ export default function App() {
       {mobileNav && <button className="scrim" onClick={() => setMobileNav(false)} aria-label="Close navigation" />}
 
       <main>
-        <header className="topbar">
+        <header className={`topbar${role === "caseworker" ? " caseworker-topbar" : ""}`}>
           <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Open navigation menu"><Icon name="menu" /></button>
           {(role === "staff" || view !== "cw-furniture") && (
             <div className="global-search" role="search">
@@ -1593,7 +1593,7 @@ export default function App() {
               <div className="global-search cw-search" role="search">
                 <Icon name="search" size={18} aria-hidden="true" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Search available furniture…" aria-label="Search furniture" />
+                  placeholder="Search term…" aria-label="Search available furniture" />
               </div>
               <div className="filter-tabs" role="group" aria-label="Filter by category">
                 {furnitureCategories.map(cat => (

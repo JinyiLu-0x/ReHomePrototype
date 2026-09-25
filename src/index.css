@@ -158,6 +158,7 @@ main { margin-left: var(--sidebar-w); width: calc(100% - var(--sidebar-w)); min-
   z-index: 20;
   gap: 14px;
 }
+.caseworker-topbar { display: none; }
 .global-search {
   display: flex;
   align-items: center;
@@ -1526,6 +1527,7 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .hero, .about-layout { gap: 40px; }
 }
 @media (max-width: 700px) {
+  .caseworker-topbar { display: flex; }
   .pub-nav-inner, .hero, .about-layout, .steps-inner, .types-inner, .pub-cta-inner, .pub-footer-inner { padding-inline: 20px; }
   .pub-nav-links { display: flex; margin-left: auto; gap: 4px; }
   .pub-nav-link { padding: 8px; font-size: 13px; }
