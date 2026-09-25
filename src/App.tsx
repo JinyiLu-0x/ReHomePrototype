@@ -1302,11 +1302,13 @@ export default function App() {
       <main>
         <header className="topbar">
           <button className="menu-button" onClick={() => setMobileNav(true)} aria-label="Open navigation menu"><Icon name="menu" /></button>
-          <div className="global-search" role="search">
-            <Icon name="search" size={18} aria-hidden="true" />
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder={role === "staff" ? "Search this workspace…" : "Search furniture…"} aria-label={role === "staff" ? "Search this workspace" : "Search furniture"} />
-          </div>
+          {(role === "staff" || view !== "cw-furniture") && (
+            <div className="global-search" role="search">
+              <Icon name="search" size={18} aria-hidden="true" />
+              <input value={search} onChange={e => setSearch(e.target.value)}
+                placeholder={role === "staff" ? "Search this workspace…" : "Search furniture…"} aria-label={role === "staff" ? "Search this workspace" : "Search furniture"} />
+            </div>
+          )}
           <div className="top-actions">
             {role === "staff" && (
               <button className="icon-button" aria-label="Notifications">
