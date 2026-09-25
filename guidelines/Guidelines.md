@@ -8,7 +8,7 @@ These refinements take precedence over older layout directions below. Preserve t
 - Staff content is capped at 1320px. Use compact tables, 48px furniture thumbnails, quiet row actions and concise primary/secondary text. Keep detailed information in drawers.
 - On narrow screens, scroll tables horizontally rather than hiding status or action columns. Dialogs support Escape, focus containment and focus restoration.
 - Preserve all existing frontend donation, review, request and allocation interactions. No backend, database or real authentication is added.
-- The original SVG at `public/images/bookcase-preview.svg` is explicitly an illustrative preview, not a donor photograph. Replace it only with an appropriate image of a single freestanding bookcase that may be used in the project.
+- The public homepage keeps the original Figma Make imagery and composition; do not replace the furniture imagery unless the replacement is clearly more harmonious with the existing set.
 
 > **These rules are authoritative for all Parts (1–4) of the prototype.**
 > Reread this file before each Part begins. Do not override with earlier instructions.

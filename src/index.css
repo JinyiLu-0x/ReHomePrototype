@@ -1551,3 +1551,80 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .cw-req-status { margin-left: auto; }
   .cw-req-expand { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
 }
+
+/* Public homepage visual rollback: retain the original Figma Make composition.
+   Staff workspace refinements above remain unchanged. */
+@media (min-width: 701px) {
+  .pub-nav { height: 58px; }
+  .pub-nav-inner { max-width: 1200px; padding: 0 40px; }
+  .pub-brand .brand-wordmark { font-size: 16px; letter-spacing: -.2px; }
+  .pub-nav-links { gap: 4px; }
+  .pub-nav-donate, .pub-nav-signin { min-height: 0; }
+  .hero { max-width: 1200px; padding: 72px 40px 64px; gap: 64px; grid-template-columns: 1fr 1fr; }
+  .hero-heading { font-size: 52px; line-height: 1.1; letter-spacing: -1px; margin-bottom: 20px; }
+  .hero-intro { max-width: 380px; margin-bottom: 32px; font-size: 17px; line-height: 1.65; }
+  .hero-photo-wrap { aspect-ratio: 4 / 5; border-radius: 10px; }
+  .about-section { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding: 0; }
+  .about-layout { display: contents; }
+  .about-inner { max-width: 600px; padding: 80px 0 80px 40px; margin-left: calc((100% - 1200px) / 2); }
+  .about-heading, .steps-heading, .types-heading { font-size: 34px; line-height: 1.2; letter-spacing: -.4px; margin-bottom: 24px; }
+  .about-body p { max-width: none; font-size: 16px; line-height: 1.75; }
+  .about-photo-wrap { height: 100%; min-height: 400px; aspect-ratio: auto; border-radius: 0; }
+  .about-photo { min-height: 400px; }
+  .steps-section { background: var(--oak-pale); border-bottom: 0; }
+  .steps-inner, .types-inner { max-width: 1200px; padding: 80px 40px; }
+  .steps-heading { margin-bottom: 52px; }
+  .step-num { background: transparent; border: 2px solid var(--walnut); width: 32px; height: 32px; }
+  .step p { max-width: none; }
+  .types-sub { margin-bottom: 48px; }
+  .type-card { border: 1px solid var(--stone); background: var(--canvas); border-radius: 8px; }
+  .type-info { padding: 12px 14px 14px; }
+  .type-info strong { font-size: 13.5px; }
+  .types-note { border: 1px solid var(--stone); padding: 14px 18px; background: var(--canvas); margin-top: 36px; }
+  .pub-cta-section { background: var(--forest); border-top: 1px solid rgba(255,255,255,.12); }
+  .pub-cta-inner { max-width: 1200px; padding: 80px 40px; flex-direction: column; align-items: flex-start; gap: 16px; }
+  .pub-cta-inner h2 { color: #fff; font-size: 38px; }
+  .pub-cta-inner .pub-cta { margin-top: 8px; }
+  .pub-footer { background: var(--forest2); border-top: 1px solid rgba(255,255,255,.08); }
+  .pub-footer-inner { max-width: 1200px; padding: 32px 40px; }
+  .pub-footer-brand strong { color: #fff; }
+  .pub-footer-note { color: rgba(255,255,255,.45); }
+}
+
+@media (max-width: 700px) {
+  .pub-nav-inner { padding-inline: 24px; }
+  .pub-nav-links { display: flex; gap: 4px; }
+  .pub-nav-link { padding: 8px 14px; font-size: 13.5px; }
+  .pub-nav-donate { display: inline-flex; }
+  .pub-nav-signin { margin-left: 8px; padding-inline: 12px; }
+  .hero { grid-template-columns: 1fr; gap: 40px; padding: 52px 24px 48px; }
+  .hero-heading { font-size: 40px; }
+  .hero-photo-wrap { aspect-ratio: 3 / 2; }
+  .about-section { grid-template-columns: 1fr; }
+  .about-inner { padding: 52px 24px; margin-left: 0; max-width: 100%; }
+  .about-photo-wrap { min-height: 300px; aspect-ratio: auto; }
+  .steps-inner { padding: 60px 24px; }
+  .steps-grid { grid-template-columns: 1fr; gap: 32px; }
+  .step-divider { display: none; }
+  .step { padding-right: 0; }
+  .types-inner { padding: 60px 24px; }
+  .types-grid { grid-template-columns: repeat(2, 1fr); }
+  .pub-cta-inner { padding: 60px 24px; }
+  .pub-footer-inner { padding: 28px 24px; }
+}
+
+@media (max-width: 640px) {
+  .pub-nav-inner { padding: 0 16px; }
+  .pub-nav-links { display: none; }
+  .pub-nav-signin { margin-left: auto; }
+  .pub-nav-donate { display: none; }
+  .hero { gap: 32px; padding: 40px 16px; }
+  .hero-heading { font-size: 32px; }
+  .hero-photo-wrap { aspect-ratio: 3 / 2; }
+  .about-inner { padding: 44px 16px; }
+  .steps-inner, .types-inner { padding: 44px 16px; }
+  .types-grid { gap: 12px; }
+  .pub-cta-inner { padding: 44px 16px; }
+  .pub-cta-inner h2 { font-size: 28px; }
+  .pub-footer-inner { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}

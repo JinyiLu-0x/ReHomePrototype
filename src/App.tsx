@@ -68,7 +68,7 @@ const photos = {
   room:     "https://images.unsplash.com/photo-1679558879563-335ee6932106?auto=format&fit=crop&w=1200&q=82",
   hero:     "https://images.unsplash.com/photo-1772797583328-f83bc3f94f80?auto=format&fit=crop&w=960&q=82",
   dining:   "https://images.unsplash.com/photo-1772442363851-738a548f6c5c?auto=format&fit=crop&w=900&q=82",
-  bookcase: "/images/bookcase-preview.svg",
+  bookcase: "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=900&q=82",
   drawers:  "https://images.unsplash.com/photo-1705719615955-41887e3a5750?auto=format&fit=crop&w=900&q=82",
   coffee:   "https://images.unsplash.com/photo-1688728147390-6925695b443f?auto=format&fit=crop&w=900&q=82",
   bed:      "https://images.unsplash.com/photo-1560184897-502a475f7a0d?auto=format&fit=crop&w=900&q=82",
@@ -843,12 +843,13 @@ export default function App() {
             {/* Hero */}
             <section className="hero" aria-label="Introduction">
               <div className="hero-copy">
-                <h1 className="hero-heading">Good furniture.<br />A new home.</h1>
+                <p className="pub-eyebrow">Melbourne furniture collective</p>
+                <h1 className="hero-heading">Give good furniture<br />a new home.</h1>
                 <p className="hero-intro">
-                  Donate usable furniture to support households setting up home after hardship.
+                  ReHome connects generous donors with households rebuilding after hardship or housing insecurity. Good furniture, passed on with care.
                 </p>
                 <button className="pub-cta" onClick={() => go("donate")}>
-                  Donate furniture
+                  Donate furniture <Icon name="arrow" size={18} aria-hidden="true" />
                 </button>
               </div>
               <div className="hero-photo-wrap">
@@ -863,10 +864,14 @@ export default function App() {
             <section id="about" className="about-section" aria-label="About ReHome">
               <div className="about-layout">
               <div className="about-inner">
-                <h2 className="about-heading">About ReHome</h2>
+                <p className="pub-eyebrow">About ReHome</p>
+                <h2 className="about-heading">A small not-for-profit with a practical purpose.</h2>
                 <div className="about-body">
                   <p>
-                    We are a small not-for-profit collecting usable second-hand furniture. Through approved caseworkers, we support households setting up home after hardship, relocation or housing insecurity. Our staff review donations and confirm each furniture allocation.
+                    ReHome collects usable second-hand furniture and passes it on, at no cost, through approved caseworkers to households after hardship or housing insecurity. We work with social services, housing support providers and community organisations across Melbourne.
+                  </p>
+                  <p>
+                    Every item is reviewed by our small team. Caseworkers submit requests on behalf of their clients, and we match what we have where we can.
                   </p>
                 </div>
               </div>
@@ -879,24 +884,25 @@ export default function App() {
             {/* How it works */}
             <section className="steps-section" aria-label="How donating works">
               <div className="steps-inner">
-                <h2 className="steps-heading">How to donate</h2>
+                <p className="pub-eyebrow">How it works</p>
+                <h2 className="steps-heading">Donating in three steps.</h2>
                 <div className="steps-grid">
                   <div className="step">
                     <span className="step-num" aria-hidden="true">1</span>
                     <h3>Submit an offer</h3>
-                    <p>Share your furniture details and collection needs.</p>
+                    <p>Tell us what you have — type, condition, and whether you can drop it off or need collection arranged.</p>
                   </div>
                   <div className="step-divider" aria-hidden="true" />
                   <div className="step">
                     <span className="step-num" aria-hidden="true">2</span>
                     <h3>Staff review</h3>
-                    <p>We assess the items and contact you about next steps.</p>
+                    <p>Our team will review your offer and contact you about next steps.</p>
                   </div>
                   <div className="step-divider" aria-hidden="true" />
                   <div className="step">
                     <span className="step-num" aria-hidden="true">3</span>
-                    <h3>Plan the handover</h3>
-                    <p>If accepted, arrange collection or drop-off with our team.</p>
+                    <h3>Arrange collection</h3>
+                    <p>Accepted items are collected or dropped off at a time that suits you. There is no charge to donors.</p>
                   </div>
                 </div>
               </div>
@@ -905,27 +911,29 @@ export default function App() {
             {/* What we accept */}
             <section className="types-section" aria-label="Types of furniture we accept">
               <div className="types-inner">
-                <h2 className="types-heading">Furniture to pass on</h2>
-                <p className="types-sub">Practical pieces with more life to give.</p>
+                <p className="pub-eyebrow">What we accept</p>
+                <h2 className="types-heading">Everyday furniture in good condition.</h2>
+                <p className="types-sub">We focus on practical household items that caseworkers request most often. The examples below show typical donation types.</p>
                 <div className="types-grid">
                   {[
                     { label: "Sofas & armchairs",    img: photos.sofa,     desc: "2-seat, 3-seat and single chairs" },
                     { label: "Dining sets",           img: photos.dining,   desc: "Tables and matching chairs" },
                     { label: "Bedroom furniture",     img: photos.bed,      desc: "Bed frames, wardrobes, drawers" },
                     { label: "Storage & shelving",    img: photos.bookcase, desc: "Bookcases, chest of drawers" },
-                  ].map(({ label, img }) => (
+                  ].map(({ label, img, desc }) => (
                     <div key={label} className="type-card">
                       <div className="type-photo-wrap">
                         <img src={img} alt={`Example: ${label}`} loading="lazy" />
                       </div>
                       <div className="type-info">
                         <strong>{label}</strong>
+                        <span>{desc}</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 <p className="types-note">
-                  Examples of donation types, not available stock. Every offer is reviewed individually.
+                  Items should be clean and in good, fair or very good condition. We assess each offer individually — if in doubt, submit and we will let you know. Images shown are examples of typical donation types.
                 </p>
               </div>
             </section>
@@ -933,9 +941,10 @@ export default function App() {
             {/* Final CTA */}
             <section className="pub-cta-section" aria-label="Call to donate">
               <div className="pub-cta-inner">
-                <h2>Furniture to pass on?</h2>
-                <button className="pub-cta" onClick={() => go("donate")}>
-                  Donate furniture
+                <h2>Have furniture to pass on?</h2>
+                <p>It takes a few minutes to submit a donation offer. Our team will review your offer and contact you about next steps.</p>
+                <button className="pub-cta pub-cta-lg pub-cta-on-forest" onClick={() => go("donate")}>
+                  Start a donation offer <Icon name="arrow" size={18} aria-hidden="true" />
                 </button>
               </div>
             </section>
@@ -944,13 +953,14 @@ export default function App() {
             <footer className="pub-footer">
               <div className="pub-footer-inner">
                 <div className="pub-footer-brand">
-                  <BrandMark size={26} color="var(--forest)" />
+                  <BrandMark size={22} color="rgba(255,255,255,0.7)" />
                   <div>
                     <strong>ReHome Furniture Collective</strong>
+                    <span>Melbourne, Victoria</span>
                   </div>
                 </div>
                 <p className="pub-footer-note">
-                  A second life for useful furniture.
+                  Furniture matched with households after hardship, at no cost. Caseworker and staff access via Sign in.
                 </p>
               </div>
             </footer>
@@ -981,7 +991,7 @@ export default function App() {
                 ) : (
                   <>
                     <div className="donate-top">
-                      <h1 className="donate-top-h1">Donate furniture</h1>
+                      <h1 className="donate-top-h1">Give good furniture a new home.</h1>
                       <p className="donate-top-sub">Our team will review your offer and contact you about next steps.</p>
                     </div>
                     <form onSubmit={submitDonate} noValidate aria-label="Donate furniture form">
