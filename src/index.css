@@ -1566,11 +1566,11 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .hero-photo-wrap { aspect-ratio: 4 / 5; border-radius: 10px; }
   .about-section { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding: 0; }
   .about-layout { display: contents; }
-  .about-inner { max-width: 600px; padding: 80px 0 80px 40px; margin-left: calc((100% - 1200px) / 2); }
+  .about-inner { grid-column: 2; grid-row: 1; max-width: 600px; padding: 80px 40px; margin-left: 0; align-self: center; }
   .about-heading, .steps-heading, .types-heading { font-size: 34px; line-height: 1.2; letter-spacing: -.4px; margin-bottom: 24px; }
   .about-body p { max-width: none; font-size: 16px; line-height: 1.75; }
-  .about-photo-wrap { height: 100%; min-height: 400px; aspect-ratio: auto; border-radius: 0; }
-  .about-photo { min-height: 400px; }
+  .about-photo-wrap { grid-column: 1; grid-row: 1; height: 460px; min-height: 0; aspect-ratio: auto; border-radius: 0; align-self: center; }
+  .about-photo { min-height: 0; }
   .steps-section { background: var(--oak-pale); border-bottom: 0; }
   .steps-inner, .types-inner { max-width: 1200px; padding: 80px 40px; }
   .steps-heading { margin-bottom: 52px; }
