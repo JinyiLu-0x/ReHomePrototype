@@ -1,5 +1,15 @@
 # ReHome — Design guidelines
 
+## Current refinement baseline (stages 2 and 3)
+
+These refinements take precedence over older layout directions below. Preserve the stage-one BrandMark and short navigation labels.
+
+- Public content uses a shared 1200px container, compact copy, warm furniture photography and white reading surfaces. About must not use negative margins. Use pale oak for the closing donation strip, with a forest-green action; avoid a brown button on a large green background.
+- Staff content is capped at 1320px. Use compact tables, 48px furniture thumbnails, quiet row actions and concise primary/secondary text. Keep detailed information in drawers.
+- On narrow screens, scroll tables horizontally rather than hiding status or action columns. Dialogs support Escape, focus containment and focus restoration.
+- Preserve all existing frontend donation, review, request and allocation interactions. No backend, database or real authentication is added.
+- The original SVG at `public/images/bookcase-preview.svg` is explicitly an illustrative preview, not a donor photograph. Replace it only with an appropriate image of a single freestanding bookcase that may be used in the project.
+
 > **These rules are authoritative for all Parts (1–4) of the prototype.**
 > Reread this file before each Part begins. Do not override with earlier instructions.
 

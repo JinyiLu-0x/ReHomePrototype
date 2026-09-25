@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, ReactNode, useState } from "react";
+import { ChangeEvent, FormEvent, ReactNode, useEffect, useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ const photos = {
   room:     "https://images.unsplash.com/photo-1679558879563-335ee6932106?auto=format&fit=crop&w=1200&q=82",
   hero:     "https://images.unsplash.com/photo-1772797583328-f83bc3f94f80?auto=format&fit=crop&w=960&q=82",
   dining:   "https://images.unsplash.com/photo-1772442363851-738a548f6c5c?auto=format&fit=crop&w=900&q=82",
-  bookcase: "https://images.unsplash.com/photo-1594620302200-9a762244a156?auto=format&fit=crop&w=900&q=82",
+  bookcase: "/images/bookcase-preview.svg",
   drawers:  "https://images.unsplash.com/photo-1705719615955-41887e3a5750?auto=format&fit=crop&w=900&q=82",
   coffee:   "https://images.unsplash.com/photo-1688728147390-6925695b443f?auto=format&fit=crop&w=900&q=82",
   bed:      "https://images.unsplash.com/photo-1560184897-502a475f7a0d?auto=format&fit=crop&w=900&q=82",
@@ -339,6 +339,14 @@ function Pill({ children, tone = "grey" }: { children: ReactNode; tone?: PillTon
   return <span className={`pill pill-${tone}`}>{children}</span>;
 }
 
+// Shared thumbnail: a missing photo must not collapse the row or show a broken image.
+function FurnitureThumb({ src }: { src?: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+  return <span className="furniture-thumb" aria-hidden="true">
+    {src && !failed ? <img src={src} alt="" width="48" height="48" loading="lazy" onError={() => setFailed(true)} /> : <Icon name="sofa" size={22} />}
+  </span>;
+}
+
 function Empty({ text }: { text: string }) {
   return (
     <div className="empty">
@@ -471,7 +479,39 @@ export default function App() {
     setMobileNav(false); setSearch("");
   };
 
-  const go = (next: View) => { setView(next); setSearch(""); setMobileNav(false); };
+  const go = (next: View) => { setView(next); setSearch(""); setMobileNav(false); window.scrollTo(0, 0); };
+
+  // Keep keyboard navigation inside the active overlay and return to its trigger.
+  const overlayKey = demoOpen ? `demo-${demoRole}` : reviewRequest ? `allocation-${reviewRequest.id}` : reqDetail ? `request-${reqDetail.id}` : reviewOffer ? `offer-${reviewOffer.id}` : editItem ? `item-${editItem.id}` : furnitureItem ? `furniture-${furnitureItem.id}` : "";
+  useEffect(() => {
+    if (!overlayKey) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = document.querySelector<HTMLElement>('[role="dialog"]');
+    if (!dialog) return;
+    const controls = () => Array.from(dialog.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), textarea:not(:disabled), select:not(:disabled), a[href], [tabindex="0"]')).filter(el => el.getClientRects().length && !el.className.includes("scrim"));
+    const oldOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    controls()[0]?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        dialog.querySelector<HTMLButtonElement>('button[aria-label^="Close"]')?.click();
+      }
+      if (event.key === "Tab") {
+        const list = controls();
+        const first = list[0], last = list[list.length - 1];
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) { event.preventDefault(); first.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = oldOverflow;
+      if (previous?.isConnected) previous.focus();
+    };
+  }, [overlayKey]);
 
   // ── Computed ──────────────────────────────────────────────────────────────────
 
@@ -493,6 +533,8 @@ export default function App() {
     (itemFilter === "All" || i.status === itemFilter) &&
     `${i.name} ${i.id} ${i.category} ${i.sourceOfferId}`.toLowerCase().includes(search.toLowerCase())
   );
+  const filteredRequests = requests.filter(r => `${r.id} ${r.itemName || r.items} ${r.caseworker} ${r.organisation}`.toLowerCase().includes(search.toLowerCase()));
+  const filteredAllocations = allocations.filter(a => `${a.id} ${a.requestId} ${a.item} ${a.caseworker} ${a.organisation}`.toLowerCase().includes(search.toLowerCase()));
 
   const furnitureCategories = ["All", ...Array.from(new Set(
     items.filter(i => i.status === "Available").map(i => i.category)
@@ -801,13 +843,12 @@ export default function App() {
             {/* Hero */}
             <section className="hero" aria-label="Introduction">
               <div className="hero-copy">
-                <p className="pub-eyebrow">Melbourne furniture collective</p>
-                <h1 className="hero-heading">Give good furniture<br />a new home.</h1>
+                <h1 className="hero-heading">Good furniture.<br />A new home.</h1>
                 <p className="hero-intro">
-                  ReHome connects generous donors with households rebuilding after hardship or housing insecurity. Good furniture, passed on with care.
+                  Donate usable furniture to support households setting up home after hardship.
                 </p>
                 <button className="pub-cta" onClick={() => go("donate")}>
-                  Donate furniture <Icon name="arrow" size={18} aria-hidden="true" />
+                  Donate furniture
                 </button>
               </div>
               <div className="hero-photo-wrap">
@@ -820,45 +861,42 @@ export default function App() {
 
             {/* About */}
             <section id="about" className="about-section" aria-label="About ReHome">
+              <div className="about-layout">
               <div className="about-inner">
-                <p className="pub-eyebrow">About ReHome</p>
-                <h2 className="about-heading">A small not-for-profit with a practical purpose.</h2>
+                <h2 className="about-heading">About ReHome</h2>
                 <div className="about-body">
                   <p>
-                    ReHome collects usable second-hand furniture and passes it on, at no cost, through approved caseworkers to households after hardship or housing insecurity. We work with social services, housing support providers and community organisations across Melbourne.
-                  </p>
-                  <p>
-                    Every item is reviewed by our small team. Caseworkers submit requests on behalf of their clients, and we match what we have where we can.
+                    We are a small not-for-profit collecting usable second-hand furniture. Through approved caseworkers, we support households setting up home after hardship, relocation or housing insecurity. Our staff review donations and confirm each furniture allocation.
                   </p>
                 </div>
               </div>
               <div className="about-photo-wrap">
                 <img src={photos.dining} alt="A dining table with chairs in morning light" className="about-photo" />
               </div>
+              </div>
             </section>
 
             {/* How it works */}
             <section className="steps-section" aria-label="How donating works">
               <div className="steps-inner">
-                <p className="pub-eyebrow">How it works</p>
-                <h2 className="steps-heading">Donating in three steps.</h2>
+                <h2 className="steps-heading">How to donate</h2>
                 <div className="steps-grid">
                   <div className="step">
                     <span className="step-num" aria-hidden="true">1</span>
                     <h3>Submit an offer</h3>
-                    <p>Tell us what you have — type, condition, and whether you can drop it off or need collection arranged.</p>
+                    <p>Share your furniture details and collection needs.</p>
                   </div>
                   <div className="step-divider" aria-hidden="true" />
                   <div className="step">
                     <span className="step-num" aria-hidden="true">2</span>
                     <h3>Staff review</h3>
-                    <p>Our team will review your offer and contact you about next steps.</p>
+                    <p>We assess the items and contact you about next steps.</p>
                   </div>
                   <div className="step-divider" aria-hidden="true" />
                   <div className="step">
                     <span className="step-num" aria-hidden="true">3</span>
-                    <h3>Arrange collection</h3>
-                    <p>Accepted items are collected or dropped off at a time that suits you. There is no charge to donors.</p>
+                    <h3>Plan the handover</h3>
+                    <p>If accepted, arrange collection or drop-off with our team.</p>
                   </div>
                 </div>
               </div>
@@ -867,29 +905,27 @@ export default function App() {
             {/* What we accept */}
             <section className="types-section" aria-label="Types of furniture we accept">
               <div className="types-inner">
-                <p className="pub-eyebrow">What we accept</p>
-                <h2 className="types-heading">Everyday furniture in good condition.</h2>
-                <p className="types-sub">We focus on practical household items that caseworkers request most often. The examples below show typical donation types.</p>
+                <h2 className="types-heading">Furniture to pass on</h2>
+                <p className="types-sub">Practical pieces with more life to give.</p>
                 <div className="types-grid">
                   {[
                     { label: "Sofas & armchairs",    img: photos.sofa,     desc: "2-seat, 3-seat and single chairs" },
                     { label: "Dining sets",           img: photos.dining,   desc: "Tables and matching chairs" },
                     { label: "Bedroom furniture",     img: photos.bed,      desc: "Bed frames, wardrobes, drawers" },
                     { label: "Storage & shelving",    img: photos.bookcase, desc: "Bookcases, chest of drawers" },
-                  ].map(({ label, img, desc }) => (
+                  ].map(({ label, img }) => (
                     <div key={label} className="type-card">
                       <div className="type-photo-wrap">
                         <img src={img} alt={`Example: ${label}`} loading="lazy" />
                       </div>
                       <div className="type-info">
                         <strong>{label}</strong>
-                        <span>{desc}</span>
                       </div>
                     </div>
                   ))}
                 </div>
                 <p className="types-note">
-                  Items should be clean and in good, fair or very good condition. We assess each offer individually — if in doubt, submit and we will let you know. Images shown are examples of typical donation types.
+                  Examples of donation types, not available stock. Every offer is reviewed individually.
                 </p>
               </div>
             </section>
@@ -897,10 +933,9 @@ export default function App() {
             {/* Final CTA */}
             <section className="pub-cta-section" aria-label="Call to donate">
               <div className="pub-cta-inner">
-                <h2>Have furniture to pass on?</h2>
-                <p>It takes a few minutes to submit a donation offer. Our team will review your offer and contact you about next steps.</p>
-                <button className="pub-cta pub-cta-lg pub-cta-on-forest" onClick={() => go("donate")}>
-                  Start a donation offer <Icon name="arrow" size={18} aria-hidden="true" />
+                <h2>Furniture to pass on?</h2>
+                <button className="pub-cta" onClick={() => go("donate")}>
+                  Donate furniture
                 </button>
               </div>
             </section>
@@ -909,14 +944,13 @@ export default function App() {
             <footer className="pub-footer">
               <div className="pub-footer-inner">
                 <div className="pub-footer-brand">
-                  <BrandMark size={22} color="rgba(255,255,255,0.7)" />
+                  <BrandMark size={26} color="var(--forest)" />
                   <div>
                     <strong>ReHome Furniture Collective</strong>
-                    <span>Melbourne, Victoria</span>
                   </div>
                 </div>
                 <p className="pub-footer-note">
-                  Furniture matched with households after hardship, at no cost. Caseworker and staff access via Sign in.
+                  A second life for useful furniture.
                 </p>
               </div>
             </footer>
@@ -947,7 +981,7 @@ export default function App() {
                 ) : (
                   <>
                     <div className="donate-top">
-                      <h1 className="donate-top-h1">Give good furniture a new home.</h1>
+                      <h1 className="donate-top-h1">Donate furniture</h1>
                       <p className="donate-top-sub">Our team will review your offer and contact you about next steps.</p>
                     </div>
                     <form onSubmit={submitDonate} noValidate aria-label="Donate furniture form">
@@ -1190,8 +1224,8 @@ export default function App() {
                 <>
                   <h2 id="demo-dialog-title" className="demo-dialog-title">Explore the prototype</h2>
                   <p className="demo-dialog-sub">Choose a role to continue.</p>
-                  <div className="demo-role-rows" role="list">
-                    <button className="demo-role-row" role="listitem"
+                  <div className="demo-role-rows">
+                    <button className="demo-role-row"
                       onClick={() => signIn(demoUsers.find(u => u.role === "staff")!)}>
                       <div className="demo-role-avatar" aria-hidden="true">CM</div>
                       <div className="demo-role-info">
@@ -1200,7 +1234,7 @@ export default function App() {
                       </div>
                       <Icon name="arrow" size={16} aria-hidden="true" />
                     </button>
-                    <button className="demo-role-row" role="listitem" onClick={() => setDemoRole("caseworker")}>
+                    <button className="demo-role-row" onClick={() => setDemoRole("caseworker")}>
                       <div className="demo-role-avatar" style={{ background: "#3a6070" }} aria-hidden="true">CW</div>
                       <div className="demo-role-info">
                         <strong>Caseworker</strong>
@@ -1217,9 +1251,9 @@ export default function App() {
                   </button>
                   <h2 id="demo-dialog-title" className="demo-dialog-title">Select an account</h2>
                   <p className="demo-dialog-sub">Caseworker accounts share the same data.</p>
-                  <div className="demo-role-rows" role="list">
+                  <div className="demo-role-rows">
                     {demoUsers.filter(u => u.role === "caseworker").map(u => (
-                      <button key={u.name} className="demo-role-row" role="listitem" onClick={() => signIn(u)}>
+                      <button key={u.name} className="demo-role-row" onClick={() => signIn(u)}>
                         <div className="avatar" aria-hidden="true">{u.initials}</div>
                         <div className="demo-role-info">
                           <strong>{u.name}</strong>
@@ -1261,8 +1295,7 @@ export default function App() {
           <div className="global-search" role="search">
             <Icon name="search" size={18} aria-hidden="true" />
             <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="Search items, donors or requests…" aria-label="Search" />
-            <kbd aria-hidden="true">⌘ K</kbd>
+              placeholder={role === "staff" ? "Search this workspace…" : "Search furniture…"} aria-label={role === "staff" ? "Search this workspace" : "Search furniture"} />
           </div>
           <div className="top-actions">
             {role === "staff" && (
@@ -1307,11 +1340,12 @@ export default function App() {
                 </div>
                 {offers.slice(0, 5).map(o => (
                   <button key={o.id} className="activity-row" onClick={() => { go("offers"); openOfferReview(o); }}>
+                    <FurnitureThumb src={o.image} name={o.items[0]?.type || "Furniture"} />
                     <div className="activity-row-info">
                       <strong>{o.donor}</strong>
                       <span>{o.id} · {o.items.length} item{o.items.length > 1 ? "s" : ""} · {o.suburb}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <div className="activity-row-meta">
                       <Pill tone={offerTone(o.status)}>{o.status}</Pill>
                       <span style={{ color: "var(--muted)", fontSize: 11.5 }}>{o.date}</span>
                     </div>
@@ -1325,13 +1359,14 @@ export default function App() {
                 </div>
                 {requests.slice(0, 5).map(r => (
                   <button key={r.id} className="activity-row" onClick={() => { go("req-alloc"); setReqAllocTab("requests"); openReqDetail(r); }}>
+                    <FurnitureThumb src={items.find(i => i.id === r.itemId)?.image} name={r.itemName || r.items} />
                     <div className="activity-row-info">
-                      <strong>{r.id} — {r.itemName || r.items}</strong>
-                      <span>{r.caseworker} · {r.organisation}</span>
+                      <strong>{r.itemName || r.items}</strong>
+                      <span>{r.id} · {r.caseworker}</span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <div className="activity-row-meta">
                       <Pill tone={reqTone(r.status)}>{r.status}</Pill>
-                      <Pill tone={r.urgency === "Urgent" ? "red" : "grey"}>{r.urgency}</Pill>
+                      {r.urgency === "Urgent" && <Pill tone="red">Urgent</Pill>}
                     </div>
                   </button>
                 ))}
@@ -1417,9 +1452,7 @@ export default function App() {
                 <thead>
                   <tr>
                     <th scope="col">Item</th>
-                    <th scope="col">Category</th>
                     <th scope="col">Condition</th>
-                    <th scope="col">Location</th>
                     <th scope="col">Status</th>
                     <th scope="col">Source offer</th>
                     <th scope="col" style={{ width: 90 }}><span className="sr-only">Actions</span></th>
@@ -1429,10 +1462,8 @@ export default function App() {
                   {filteredItems.map(item => (
                     <tr key={item.id} onClick={() => openItemDetail(item)} tabIndex={0}
                       onKeyDown={e => e.key === "Enter" && openItemDetail(item)}>
-                      <td><strong>{item.name}</strong><span className="sub">{item.id}</span></td>
-                      <td className="muted-cell">{item.category}</td>
+                      <td><div className="item-cell"><FurnitureThumb src={item.image} name={item.name} /><div><strong>{item.name}</strong><span className="sub">{item.id} · {item.category}</span></div></div></td>
                       <td>{item.condition}</td>
-                      <td className="muted-cell">{item.location}</td>
                       <td><Pill tone={itemTone(item.status)}>{item.status}</Pill></td>
                       <td className="muted-cell">{item.sourceOfferId || "—"}</td>
                       <td>
@@ -1444,7 +1475,7 @@ export default function App() {
                     </tr>
                   ))}
                   {!filteredItems.length && (
-                    <tr><td colSpan={7}><Empty text="No items match this filter." /></td></tr>
+                    <tr><td colSpan={5}><Empty text="No items match this filter." /></td></tr>
                   )}
                 </tbody>
               </table>
@@ -1469,23 +1500,20 @@ export default function App() {
                 <table className="data-table" aria-label="Requests">
                   <thead>
                     <tr>
-                      <th scope="col">Request</th>
                       <th scope="col">Item requested</th>
                       <th scope="col">Caseworker</th>
-                      <th scope="col">Agency</th>
                       <th scope="col">Submitted</th>
                       <th scope="col">Status</th>
                       <th scope="col" style={{ width: 90 }}><span className="sr-only">Actions</span></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {requests.map(r => (
+                    {filteredRequests.length === 0 && <tr><td colSpan={5} className="empty-state">No requests match your search.</td></tr>}
+                    {filteredRequests.map(r => (
                       <tr key={r.id} onClick={() => openReqDetail(r)} tabIndex={0}
                         onKeyDown={e => e.key === "Enter" && openReqDetail(r)}>
-                        <td><strong>{r.id}</strong><span className="sub"><Pill tone={r.urgency === "Urgent" ? "red" : "grey"}>{r.urgency}</Pill></span></td>
-                        <td>{r.itemName || r.items}</td>
-                        <td><strong>{r.caseworker}</strong></td>
-                        <td className="muted-cell">{r.organisation}</td>
+                        <td><div className="item-cell"><FurnitureThumb src={items.find(i => i.id === r.itemId)?.image} name={r.itemName || r.items} /><div><strong>{r.itemName || r.items}</strong><span className="sub">{r.id}{r.urgency === "Urgent" && <> · <span className="urgent-label">Urgent</span></>}</span></div></div></td>
+                        <td><strong>{r.caseworker}</strong><span className="sub">{r.organisation}</span></td>
                         <td className="muted-cell">{r.submitted}</td>
                         <td><Pill tone={reqTone(r.status)}>{r.status}</Pill></td>
                         <td>
@@ -1520,7 +1548,8 @@ export default function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {allocations.map(a => (
+                    {filteredAllocations.length === 0 && <tr><td colSpan={8} className="empty-state">No allocations match your search.</td></tr>}
+                    {filteredAllocations.map(a => (
                       <tr key={a.id} style={{ opacity: a.completed ? .7 : 1 }}>
                         <td><strong>{a.id}</strong></td>
                         <td>{a.requestId || "—"}</td>
@@ -1594,7 +1623,7 @@ export default function App() {
           {view === "cw-requests" && (
             <section className="panel list-panel">
               <div className="toolbar">
-                <h2>My requests</h2>
+                <button className="text-action" onClick={() => go("cw-furniture")}>Browse furniture <Icon name="arrow" size={15} /></button>
                 <span>{myRequests.filter(r => r.status !== "Fulfilled" && r.status !== "Closed").length} pending</span>
               </div>
               {myRequests.length === 0 ? (
@@ -1604,6 +1633,7 @@ export default function App() {
                   {myRequests.map(r => (
                     <div key={r.id} className="cw-req-item" role="listitem">
                       <div className="cw-req-main">
+                        <FurnitureThumb src={items.find(i => i.id === r.itemId)?.image} name={r.itemName || r.items} />
                         <div className="cw-req-info">
                           <div className="cw-req-top">
                             <span className="cw-req-ref">{r.id}</span>
@@ -1625,7 +1655,6 @@ export default function App() {
                       </div>
                       {expandedReqId === r.id && (
                         <div className="cw-req-expand" role="region" aria-label={`Details for ${r.id}`}>
-                          <div className="cw-expand-field"><small>Item requested</small><span>{r.itemName || r.items}</span></div>
                           {r.suburb && <div className="cw-expand-field"><small>Household suburb</small><span>{r.suburb}</span></div>}
                           {r.priorityNotes && <div className="cw-expand-field"><small>Priority notes</small><span>{r.priorityNotes}</span></div>}
                           {r.constraints && <div className="cw-expand-field"><small>Constraints</small><span>{r.constraints}</span></div>}
