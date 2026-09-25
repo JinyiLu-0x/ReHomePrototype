@@ -1564,12 +1564,12 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .hero-heading { font-size: 52px; line-height: 1.1; letter-spacing: -1px; margin-bottom: 20px; }
   .hero-intro { max-width: 380px; margin-bottom: 32px; font-size: 17px; line-height: 1.65; }
   .hero-photo-wrap { aspect-ratio: 4 / 5; border-radius: 10px; }
-  .about-section { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; padding: 0; }
+  .about-section { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 0; align-items: stretch; }
   .about-layout { display: contents; }
-  .about-inner { grid-column: 2; grid-row: 1; max-width: 600px; padding: 80px 40px; margin-left: 0; align-self: center; }
+  .about-inner { grid-column: 2; grid-row: 1; max-width: none; padding: 80px 64px; margin-left: 0; align-self: center; }
   .about-heading, .steps-heading, .types-heading { font-size: 34px; line-height: 1.2; letter-spacing: -.4px; margin-bottom: 24px; }
   .about-body p { max-width: none; font-size: 16px; line-height: 1.75; }
-  .about-photo-wrap { grid-column: 1; grid-row: 1; height: 460px; min-height: 0; aspect-ratio: auto; border-radius: 0; align-self: center; }
+  .about-photo-wrap { grid-column: 1; grid-row: 1; height: auto; min-height: 0; aspect-ratio: 4 / 3; border-radius: 0; align-self: center; }
   .about-photo { min-height: 0; }
   .steps-section { background: var(--oak-pale); border-bottom: 0; }
   .steps-inner, .types-inner { max-width: 1200px; padding: 80px 40px; }
