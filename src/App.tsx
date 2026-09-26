@@ -1387,9 +1387,13 @@ export default function App() {
           </>}
 
           {/* ══ P7: Donation offers table ═══════════════════════════════════════════ */}
-          {view === "offers" && (
-            <section className="panel list-panel">
-              <div className="toolbar">
+          {view === "offers" && <>
+              <div className="cw-toolbar">
+                <div className="global-search cw-search" role="search">
+                  <Icon name="search" size={18} aria-hidden="true" />
+                  <input value={search} onChange={e => setSearch(e.target.value)}
+                    placeholder="Search term…" aria-label="Search donation offers" />
+                </div>
                 <div className="filter-tabs" role="group" aria-label="Filter by offer status">
                   {(["All", "Submitted", "Under review", "Accepted", "Declined", "Collection arranged"] as const).map(f => (
                     <button key={f} className={offerFilter === f ? "active" : ""}
@@ -1399,8 +1403,9 @@ export default function App() {
                     </button>
                   ))}
                 </div>
-                <span>{filteredOffers.length} offer{filteredOffers.length !== 1 ? "s" : ""}</span>
+                <span className="cw-count" aria-live="polite">{filteredOffers.length} offer{filteredOffers.length !== 1 ? "s" : ""}</span>
               </div>
+            <section className="panel list-panel">
               <table className="data-table" aria-label="Donation offers">
                 <thead>
                   <tr>
@@ -1444,11 +1449,16 @@ export default function App() {
                 </tbody>
               </table>
             </section>
-          )}
+          </>}
 
           {/* ══ P9: Inventory table ═════════════════════════════════════════════════ */}
           {view === "inventory" && <>
-            <div className="inventory-toolbar">
+            <div className="cw-toolbar">
+              <div className="global-search cw-search" role="search">
+                <Icon name="search" size={18} aria-hidden="true" />
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search term…" aria-label="Search furniture inventory" />
+              </div>
               <div className="filter-tabs" role="group" aria-label="Filter by item status">
                 {(["All", "To assess", "Available", "Reserved", "Allocated", "Collected"] as const).map(f => (
                   <button key={f} className={itemFilter === f ? "active" : ""} onClick={() => setItemFilter(f)} aria-pressed={itemFilter === f}>
@@ -1457,7 +1467,7 @@ export default function App() {
                   </button>
                 ))}
               </div>
-              <span style={{ color: "var(--muted)", fontSize: 12.5 }}>{filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}</span>
+              <span className="cw-count" aria-live="polite">{filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}</span>
             </div>
             <section className="panel list-panel">
               <table className="data-table" aria-label="Furniture inventory">
