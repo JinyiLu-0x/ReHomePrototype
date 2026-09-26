@@ -1066,7 +1066,7 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 .pub-nav-signin:hover { color: var(--ink); background: var(--canvas); }
 
 /* ── Public page wrapper ─────────────────────────────────────────────── */
-.home-page { width: 100%; }
+.home-page { width: 100%; background: #fbf7ef; }
 .pub-page-wrap {
   width: 100%; background: var(--canvas); min-height: calc(100vh - 58px);
   display: flex; justify-content: center; align-items: flex-start;
@@ -1192,9 +1192,9 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 .pub-cta-inner .pub-cta { margin-top: 8px; }
 /* White button for use on forest-green panels */
 .pub-cta-on-forest {
-  background: #fff !important; color: var(--forest) !important;
+  background: #e6c98f !important; color: #294d40 !important;
 }
-.pub-cta-on-forest:hover { background: var(--oak-pale) !important; }
+.pub-cta-on-forest:hover { background: #f0dbad !important; }
 
 /* ── Public footer ───────────────────────────────────────────────────── */
 .pub-footer {
