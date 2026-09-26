@@ -278,27 +278,9 @@ const initialAllocations: Allocation[] = [
 
 function BrandMark({ size = 28, color = "currentColor" }: { size?: number; color?: string }) {
   return (
-    <svg
-      width={size} height={size} viewBox="0 0 28 28"
-      fill="none" stroke={color} strokeWidth="2.1"
-      strokeLinecap="round" strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {/* Chair back — tall panel with gabled top */}
-      <path d="M10 22V10L14 6L18 10V22" />
-      {/* Left armrest */}
-      <path d="M6 16H10" />
-      {/* Right armrest */}
-      <path d="M18 16H22" />
-      {/* Left side down to seat */}
-      <path d="M6 16V21" />
-      {/* Right side down to seat */}
-      <path d="M22 16V21" />
-      {/* Seat */}
-      <path d="M6 21H22" />
-      {/* Legs */}
-      <path d="M8 21V24.5M20 21V24.5" />
-    </svg>
+    <span className="rehome-logo" style={{ width: size, height: size, color }} aria-hidden="true">
+      <img src="/images/rehome-logo.png" alt="" />
+    </span>
   );
 }
 
@@ -798,7 +780,7 @@ export default function App() {
     <header className="pub-nav" role="banner">
       <div className="pub-nav-inner">
         <button className="pub-brand" onClick={() => go("home")} aria-label="ReHome Furniture Collective — go to home">
-          <BrandMark size={26} color="var(--forest)" />
+          <BrandMark size={38} color="var(--forest)" />
           <span className="brand-wordmark">ReHome</span>
         </button>
         <nav className="pub-nav-links" aria-label="Public navigation">
@@ -810,6 +792,10 @@ export default function App() {
             }}>
             About
           </button>
+          <button className="pub-nav-link" onClick={() => {
+            if (view !== "home") { go("home"); window.setTimeout(() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }), 60); }
+            else { document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" }); }
+          }}>How it works</button>
           <button
             className={`pub-nav-donate${view === "donate" ? " active" : ""}`}
             onClick={() => go("donate")}
@@ -882,7 +868,7 @@ export default function App() {
             </section>
 
             {/* How it works */}
-            <section className="steps-section" aria-label="How donating works">
+            <section id="how-it-works" className="steps-section" aria-label="How donating works">
               <div className="steps-inner">
                 <p className="pub-eyebrow">How it works</p>
                 <h2 className="steps-heading">Donating in three steps.</h2>

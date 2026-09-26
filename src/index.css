@@ -1,6 +1,10 @@
 @import url("https://fonts.googleapis.com/css2?family=Lora:wght@600&family=Source+Sans+3:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
+/* Crop the supplied logo's transparent margin without altering its artwork. */
+.rehome-logo { display: inline-block; position: relative; overflow: hidden; flex-shrink: 0; }
+.rehome-logo img { position: absolute; width: 150%; max-width: none; height: auto; left: -22%; top: -26%; }
+
 /* ── Tokens ────────────────────────────────────────────────────────── */
 :root {
   font-family: "Source Sans 3", sans-serif;
@@ -1246,6 +1250,7 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .pub-footer-inner { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
 }
 
+
 /* ══════════════════════════════════════════════════════════════════════
    Stage 2: Sign-in page and demo access dialog
    ══════════════════════════════════════════════════════════════════════ */
@@ -1629,4 +1634,33 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   .pub-cta-inner { padding: 44px 16px; }
   .pub-cta-inner h2 { font-size: 28px; }
   .pub-footer-inner { padding: 24px 16px; flex-direction: column; align-items: flex-start; }
+}
+
+/* Warm glass navigation and editorial homepage typography. */
+.pub-nav { height: 80px; background: rgba(229, 215, 200, .88); border-bottom: 1px solid rgba(106, 75, 53, .16); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+.pub-nav-inner { gap: 20px; }
+.pub-brand { gap: 10px; }
+.pub-brand .brand-wordmark { font-family: "Lora", Georgia, serif; font-size: 24px; font-weight: 600; letter-spacing: -.8px; color: #294438; }
+.pub-nav-links { gap: 6px; }
+.pub-nav-link { color: #514338; font-size: 14px; font-weight: 500; padding: 10px 14px; border-radius: 8px; }
+.pub-nav-link:hover { background: rgba(255,255,255,.5); color: #30291f; }
+.pub-nav-donate { margin-left: 18px; padding: 12px 20px; min-height: 44px; border-radius: 8px; background: #294d40; box-shadow: 0 2px 4px rgba(35,53,42,.12); }
+.pub-nav-signin { min-height: 44px; margin-left: 0; padding: 10px 16px; border: 1px solid rgba(106,75,53,.28); color: #514338; background: rgba(255,255,255,.28); border-radius: 8px; }
+.pub-nav-signin:hover, .pub-nav-signin-active { background: rgba(255,255,255,.65); color: #30291f; }
+.hero-heading { font-family: "Lora", Georgia, serif; font-weight: 600; font-size: clamp(38px, 4.4vw, 58px); line-height: 1.13; letter-spacing: -1.6px; color: #293c32; text-wrap: balance; }
+.hero-intro { line-height: 1.75; color: #5b625b; }
+.hero .pub-cta { background: #294d40; padding: 13px 22px; border-radius: 8px; }
+.hero .pub-cta:hover { background: #1c382e; }
+#about, #how-it-works { scroll-margin-top: 96px; }
+.pub-footer .rehome-logo { background: #e5d7c8; border-radius: 4px; }
+@media (max-width: 700px) {
+  .pub-nav { height: auto; min-height: 72px; }
+  .pub-nav-inner { min-height: 72px; flex-wrap: wrap; gap: 8px 12px; padding-block: 12px; }
+  .pub-brand .brand-wordmark { font-size: 22px; }
+  .pub-nav-signin { margin-left: auto; }
+  .pub-nav-links { display: flex; order: 3; width: 100%; margin-left: 0; justify-content: space-between; }
+  .pub-nav-link { padding: 8px 10px; font-size: 13px; }
+  .pub-nav-donate { display: inline-flex; align-items: center; margin-left: auto; padding: 10px 14px; }
+  .hero-heading { font-size: 40px; letter-spacing: -1px; }
+  #about, #how-it-works { scroll-margin-top: 140px; }
 }
