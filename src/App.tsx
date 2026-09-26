@@ -806,8 +806,11 @@ export default function App() {
         <button
           className={`pub-nav-signin${view === "signin" ? " pub-nav-signin-active" : ""}`}
           onClick={() => go("signin")}
+          aria-label="Sign in"
+          title="Sign in"
           aria-current={view === "signin" ? "page" : undefined}>
-          Sign in
+          <Icon name="user" size={17} />
+          <span className="pub-nav-signin-arrow" aria-hidden="true"><Icon name="arrow" size={10} /></span>
         </button>
       </div>
     </header>
