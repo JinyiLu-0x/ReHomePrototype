@@ -1192,9 +1192,9 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 .pub-cta-inner .pub-cta { margin-top: 8px; }
 /* White button for use on forest-green panels */
 .pub-cta-on-forest {
-  background: #e6c98f !important; color: #294d40 !important;
+  background: #d9c7a8 !important; color: #294d40 !important;
 }
-.pub-cta-on-forest:hover { background: #f0dbad !important; }
+.pub-cta-on-forest:hover { background: #e5d8bf !important; }
 
 /* ── Public footer ───────────────────────────────────────────────────── */
 .pub-footer {
