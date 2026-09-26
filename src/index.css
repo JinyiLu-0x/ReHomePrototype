@@ -1726,7 +1726,7 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 
 /* Final public-nav hierarchy: text links, one CTA, one compact account entry. */
 .pub-nav {
-  background: #e5d7c8;
+  background: #dac6b2;
   border-bottom-color: rgba(74, 52, 37, .18);
 }
 .pub-nav-link {
