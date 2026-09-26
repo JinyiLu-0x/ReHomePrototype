@@ -329,6 +329,54 @@ function FurnitureThumb({ src }: { src?: string; name: string }) {
   </span>;
 }
 
+function InventoryRing({ items }: { items: Item[] }) {
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+    const start = performance.now();
+    const animate = (now: number) => {
+      const elapsed = Math.min((now - start) / 900, 1);
+      setProgress(1 - Math.pow(1 - elapsed, 3));
+      if (elapsed < 1) frame = requestAnimationFrame(animate);
+    };
+    const finish = () => { if (motion.matches) { cancelAnimationFrame(frame); setProgress(1); } };
+    if (motion.matches) setProgress(1);
+    else frame = requestAnimationFrame(animate);
+    motion.addEventListener("change", finish);
+    return () => { cancelAnimationFrame(frame); motion.removeEventListener("change", finish); };
+  }, []);
+  const statuses: { label: InventoryStatus; color: string }[] = [
+    { label: "Available", color: "#284C40" },
+    { label: "To assess", color: "#C49A6C" },
+    { label: "Reserved", color: "#A27B60" },
+    { label: "Allocated", color: "#70513C" },
+    { label: "Collected", color: "#829782" },
+    { label: "Unavailable", color: "#9A9990" },
+  ];
+  const counts = statuses.map(s => ({ ...s, count: items.filter(i => i.status === s.label).length }));
+  let offset = 0;
+  return <section className="panel inventory-summary">
+    <div className="inventory-summary-heading"><h2>Furniture by status</h2><p>Current inventory</p></div>
+    <div className="inventory-ring">
+      <svg viewBox="0 0 160 160" aria-hidden="true">
+        <circle cx="80" cy="80" r="62" fill="none" stroke="#eee8df" strokeWidth="18" />
+        {counts.map(s => {
+          const share = items.length ? s.count / items.length * 100 : 0;
+          const start = offset; offset += share;
+          return <circle key={s.label} cx="80" cy="80" r="62" fill="none" stroke={s.color} strokeWidth="18"
+            pathLength="100" strokeDasharray={`${share * progress} 100`} strokeDashoffset={-start * progress}
+            transform="rotate(-90 80 80)" />;
+        })}
+      </svg>
+      <div className="inventory-ring-total"><strong>{items.length}</strong><span>items</span></div>
+    </div>
+    <ul className="inventory-ring-legend" aria-label="Furniture counts by status">
+      {counts.map(s => <li key={s.label}><span className="inventory-ring-dot" style={{ background: s.color }} /><span>{s.label}</span><strong>{s.count}</strong></li>)}
+    </ul>
+  </section>;
+}
+
 function Empty({ text }: { text: string }) {
   return (
     <div className="empty">
@@ -1333,6 +1381,7 @@ export default function App() {
                 </button>
               ))}
             </div>
+            <InventoryRing items={items} />
             <div className="overview-activity">
               <div className="panel">
                 <div className="panel-head">

@@ -1726,7 +1726,7 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 
 /* Final public-nav hierarchy: text links, one CTA, one compact account entry. */
 .pub-nav {
-  background: #c8ad93;
+  background: #e5d7c8;
   border-bottom-color: rgba(74, 52, 37, .18);
 }
 .pub-nav-link {
@@ -1762,14 +1762,14 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
 .pub-nav-links { gap: 18px; }
 .pub-nav-donate {
   margin-left: 10px;
-  background: rgba(36, 76, 61, .9);
-  border: 1px solid rgba(255, 255, 255, .34);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 3px 9px rgba(47, 42, 35, .16);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background: var(--forest);
+  border: 1px solid var(--forest);
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 .pub-nav-donate:hover,
-.pub-nav-donate.active { background: rgba(27, 58, 47, .96); }
+.pub-nav-donate.active { background: var(--forest2); }
 .pub-nav-signin {
   width: 40px;
   height: 40px;
@@ -1804,3 +1804,26 @@ textarea.d-input, .d-textarea { height: auto; padding: 9px 11px; resize: vertica
   background: #f5efe8;
   border: 1px solid rgba(37, 67, 55, .32);
 }
+
+.inventory-summary { display: grid; grid-template-columns: 1fr 180px minmax(240px, 1fr); align-items: center; gap: 32px; padding: 24px 28px; margin-bottom: 24px; animation: inventory-panel-in .45s ease-out both; }
+.inventory-summary-heading h2 { font-size: 19px; font-weight: 600; margin: 0 0 6px; }
+.inventory-summary-heading p { font-size: 14px; color: var(--muted); margin: 0; }
+.inventory-ring { width: 160px; height: 160px; position: relative; }
+.inventory-ring svg { display: block; width: 100%; height: 100%; }
+.inventory-ring-total { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.inventory-ring-total strong { font-size: 30px; font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.inventory-ring-total span { color: var(--muted); font-size: 13px; }
+.inventory-ring-legend { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; }
+.inventory-ring-legend li { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.inventory-ring-legend strong { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+.inventory-ring-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; }
+@keyframes inventory-panel-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 850px) {
+  .inventory-summary { grid-template-columns: 160px 1fr; gap: 20px; }
+  .inventory-summary-heading { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  .inventory-summary { grid-template-columns: 1fr; padding: 20px; }
+  .inventory-ring { justify-self: center; }
+}
+@media (prefers-reduced-motion: reduce) { .inventory-summary { animation: none; } }
