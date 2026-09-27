@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useState } from "react";
+import { cancelAllocation, type ReleaseStatus } from "./cancellation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ interface Allocation {
   caseworker: string; organisation: string;
   date: string; completed: boolean;
   confirmedBy: string; confirmedAt: string;
+  cancelledAt?: string; cancellationReason?: string;
 }
 
 interface DonateFormItem {
@@ -491,6 +493,10 @@ export default function App() {
   const [reviewRequest, setReviewRequest] = useState<Request | null>(null);
   const [selectedItem,  setSelectedItem]  = useState("");
   const [allocError,    setAllocError]    = useState("");
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [releaseStatus, setReleaseStatus] = useState<ReleaseStatus | "">("");
+  const [cancelError, setCancelError] = useState("");
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -514,7 +520,7 @@ export default function App() {
   const go = (next: View) => { setView(next); setSearch(""); setMobileNav(false); window.scrollTo(0, 0); };
 
   // Keep keyboard navigation inside the active overlay and return to its trigger.
-  const overlayKey = demoOpen ? `demo-${demoRole}` : reviewRequest ? `allocation-${reviewRequest.id}` : reqDetail ? `request-${reqDetail.id}` : reviewOffer ? `offer-${reviewOffer.id}` : editItem ? `item-${editItem.id}` : furnitureItem ? `furniture-${furnitureItem.id}` : "";
+  const overlayKey = cancelId ? `cancel-${cancelId}` : demoOpen ? `demo-${demoRole}` : reviewRequest ? `allocation-${reviewRequest.id}` : reqDetail ? `request-${reqDetail.id}` : reviewOffer ? `offer-${reviewOffer.id}` : editItem ? `item-${editItem.id}` : furnitureItem ? `furniture-${furnitureItem.id}` : "";
   useEffect(() => {
     if (!overlayKey) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -552,7 +558,7 @@ export default function App() {
   const availableCount      = items.filter(i => i.status === "Available").length;
   const openReqCount        = requests.filter(r => r.status === "Submitted" || r.status === "Under review").length;
   const completedCount      = allocations.filter(a => a.completed).length;
-  const activeAllocCount    = allocations.filter(a => !a.completed).length;
+  const activeAllocCount    = allocations.filter(a => !a.completed && !a.cancelledAt).length;
 
   const myRequests = currentUser ? requests.filter(r => r.caseworker === currentUser.name) : [];
 
@@ -664,6 +670,9 @@ export default function App() {
 
   const confirmAllocation = () => {
     if (!reviewRequest || !selectedItem) return;
+    if (allocations.some(a => a.requestId === reviewRequest.id) || !requests.some(r => r.id === reviewRequest.id && (r.status === "Submitted" || r.status === "Under review"))) {
+      setAllocError("This request is already processed. Use a new request for a new allocation."); return;
+    }
     const item = items.find(i => i.id === selectedItem);
     if (!item) return;
     if (item.status !== "Available") {
@@ -689,7 +698,7 @@ export default function App() {
 
   const markComplete = (id: string) => {
     const alloc = allocations.find(a => a.id === id);
-    if (!alloc) return;
+    if (role !== "staff" || !alloc || alloc.completed || alloc.cancelledAt) return;
     setAllocations(all => all.map(a => a.id === id ? { ...a, completed: true } : a));
     if (alloc.itemId)    setItems(all => all.map(i => i.id === alloc.itemId ? { ...i, status: "Collected", location: "Delivered" } : i));
     if (alloc.requestId) {
@@ -697,6 +706,22 @@ export default function App() {
       setRequests(all => all.map(r => r.id === alloc.requestId ? { ...r, status: "Fulfilled", outcome } : r));
     }
     notify("Allocation completed — item marked as Collected, request Fulfilled");
+  };
+
+  const confirmCancellation = (event: FormEvent) => {
+    event.preventDefault();
+    if (role !== "staff" || !cancelId) return;
+    if (!releaseStatus) { setCancelError("Choose the item's availability after cancellation."); return; }
+    try {
+      const next = cancelAllocation(allocations, items, requests, cancelId, cancelReason, releaseStatus, new Date().toISOString());
+      setAllocations(next.allocations);
+      setItems(next.items as Item[]);
+      setRequests(next.requests as Request[]);
+      setCancelId(null);
+      notify(`Allocation cancelled — request closed, item ${releaseStatus.toLowerCase()}`);
+    } catch (error) {
+      setCancelError(error instanceof Error ? error.message : "Unable to cancel this allocation.");
+    }
   };
 
   const setDF = (k: keyof typeof donateForm, v: string) => {
@@ -1622,13 +1647,18 @@ export default function App() {
                         <td><strong>{a.caseworker}</strong><span className="sub">{a.organisation}</span></td>
                         <td className="muted-cell">{a.date}</td>
                         <td><strong>{a.confirmedBy}</strong><span className="sub">{a.confirmedAt}</span></td>
-                        <td><Pill tone={a.completed ? "green" : "blue"}>{a.completed ? "Completed" : "Awaiting collection"}</Pill></td>
+                        <td><Pill tone={a.cancelledAt ? "grey" : a.completed ? "green" : "blue"}>{a.cancelledAt ? "Cancelled" : a.completed ? "Completed" : "Awaiting collection"}</Pill>
+                          {a.cancelledAt && <><span className="sub">{new Date(a.cancelledAt).toLocaleString("en-AU")}</span><span className="sub">{a.cancellationReason}</span></>}
+                        </td>
                         <td>
                           <div className="table-actions">
-                            {!a.completed && (
+                            {!a.completed && !a.cancelledAt && (<>
                               <button className="row-button" onClick={() => markComplete(a.id)}
                                 aria-label={`Mark allocation ${a.id} as complete`}>Mark complete</button>
-                            )}
+                              <button className="row-button" aria-label={`Cancel allocation ${a.id}`} onClick={() => {
+                                setCancelId(a.id); setCancelReason(""); setReleaseStatus(""); setCancelError("");
+                              }}>Cancel allocation</button>
+                            </>)}
                           </div>
                         </td>
                       </tr>
@@ -2071,6 +2101,41 @@ export default function App() {
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cancelId && role === "staff" && (
+        <div className="sheet-layer" role="dialog" aria-modal="true" aria-labelledby="cancel-title">
+          <button className="sheet-scrim" aria-label="Close cancellation" onClick={() => setCancelId(null)} />
+          <div className="sheet">
+            <div className="sheet-head">
+              <h2 id="cancel-title" className="sheet-title">Cancel allocation {cancelId}</h2>
+              <button className="sheet-close-btn" aria-label="Close cancellation dialog" onClick={() => setCancelId(null)}><Icon name="close" size={17} /></button>
+            </div>
+            <div className="sheet-body">
+              <form className="sheet-req-form" onSubmit={confirmCancellation}>
+                <p>{allocations.find(a => a.id === cancelId)?.item}</p>
+                <p className="muted-cell" style={{ marginBottom: 20 }}>This closes the related request and keeps the allocation in the history. Choose whether the furniture can be offered again.</p>
+                <div className="d-field">
+                  <label className="d-label" htmlFor="cancel-reason">Cancellation reason (staff only)</label>
+                  <textarea id="cancel-reason" className="d-input d-textarea" rows={3} required value={cancelReason} onChange={e => setCancelReason(e.target.value)} />
+                </div>
+                <div className="d-field">
+                  <label className="d-label" htmlFor="release-status">Furniture availability after cancellation</label>
+                  <select id="release-status" className="d-input" required value={releaseStatus} onChange={e => setReleaseStatus(e.target.value as ReleaseStatus | "")}>
+                    <option value="">Select availability</option>
+                    <option value="Available">Available — ready for another request</option>
+                    <option value="Unavailable">Unavailable — needs further assessment</option>
+                  </select>
+                </div>
+                {cancelError && <p role="alert" className="field-error">{cancelError}</p>}
+                <div className="status-btn-group">
+                  <button type="button" className="row-button" onClick={() => setCancelId(null)}>Keep allocation</button>
+                  <button type="submit" className="primary">Confirm cancellation</button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
