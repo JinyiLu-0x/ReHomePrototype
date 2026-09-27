@@ -2119,8 +2119,8 @@ export default function App() {
                 <p>{allocations.find(a => a.id === cancelId)?.item}</p>
                 <p className="muted-cell" style={{ marginBottom: 20 }}>This closes the related request and keeps the allocation in the history. Choose whether the furniture can be offered again.</p>
                 <div className="d-field">
-                  <label className="d-label" htmlFor="cancel-reason">Cancellation reason (staff only)</label>
-                  <textarea id="cancel-reason" className="d-input d-textarea" rows={3} required value={cancelReason} onChange={e => setCancelReason(e.target.value)} />
+                  <label className="d-label" htmlFor="cancel-reason">Cancellation reason <span className="d-req" aria-hidden="true">*</span></label>
+                  <textarea id="cancel-reason" className="d-input d-textarea" rows={3} required aria-required="true" value={cancelReason} onChange={e => setCancelReason(e.target.value)} />
                 </div>
                 <div className="d-field">
                   <label className="d-label" htmlFor="release-status">Furniture availability after cancellation</label>
