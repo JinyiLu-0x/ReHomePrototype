@@ -31,6 +31,7 @@ interface Item {
   status: InventoryStatus; location: string; image: string;
   dimensions: string; description: string; colour: string; material: string;
   concerns: string; sourceOfferId: string;
+  safeToMove?: boolean;
 }
 
 interface Request {
@@ -482,6 +483,7 @@ export default function App() {
   const [editItem,     setEditItem]     = useState<Item | null>(null);
   const [editDesc,     setEditDesc]     = useState("");
   const [editConcerns, setEditConcerns] = useState("");
+  const [itemError, setItemError] = useState("");
 
   // ── P10 request detail & allocation modal ─────────────────────────────────────
   const [reqDetail,     setReqDetail]     = useState<Request | null>(null);
@@ -584,7 +586,7 @@ export default function App() {
 
   const saveOfferReview = () => {
     if (!reviewOffer || !currentUser) return;
-    const isNewAccept = offerStatus === "Accepted" && reviewOffer.status !== "Accepted";
+    const isNewAccept = (offerStatus === "Accepted" || offerStatus === "Collection arranged") && !items.some(i => i.sourceOfferId === reviewOffer.id);
     setOffers(all => all.map(o => o.id === reviewOffer.id ? {
       ...o, status: offerStatus, reviewNotes: offerNotes,
       reviewer: offerStatus !== "Submitted" ? currentUser.name : o.reviewer,
@@ -605,11 +607,12 @@ export default function App() {
           location: "Intake", image: reviewOffer.image,
           dimensions: oi.dimensions, description: oi.description,
           colour: "—", material: "—",
-          concerns: oi.concerns, sourceOfferId: reviewOffer.id,
+          concerns: oi.concerns, safeToMove: oi.safeToMove, sourceOfferId: reviewOffer.id,
         })),
         ...all,
       ]);
       notify(`${reviewOffer.items.length} item${reviewOffer.items.length > 1 ? "s" : ""} added to inventory as "To assess"`);
+      go("inventory"); setItemFilter("To assess"); setSearch(reviewOffer.id);
     } else {
       notify(`Offer ${reviewOffer.id} updated to "${offerStatus}"`);
     }
@@ -618,23 +621,25 @@ export default function App() {
 
   const openItemDetail = (item: Item) => {
     setEditItem(item); setEditDesc(item.description); setEditConcerns(item.concerns);
+    setItemError("");
   };
 
-  const saveItemDetail = () => {
+  const saveItemDetail = (status?: InventoryStatus) => {
     if (!editItem) return;
-    setItems(all => all.map(i => i.id === editItem.id ? { ...i, description: editDesc, concerns: editConcerns } : i));
+    const nextStatus = status || editItem.status;
+    if (!editItem.name.trim()) {
+      setItemError("Enter an item name before saving."); return;
+    }
+    if (nextStatus === "Available" && (!editDesc.trim() || !editItem.condition.trim() || !editItem.dimensions.trim() || editItem.dimensions === "—" || editItem.safeToMove === undefined)) {
+      setItemError("Complete the description, condition, dimensions and safe-to-move assessment before making this item available."); return;
+    }
+    setItems(all => all.map(i => i.id === editItem.id ? { ...editItem, name: editItem.name.trim(), description: editDesc.trim(), concerns: editConcerns.trim(), status: nextStatus } : i));
     setEditItem(null);
-    notify("Item details saved");
+    notify(status === "Available" ? "Item saved and made available to caseworkers" : "Item details saved");
   };
 
   const changeItemStatus = (status: InventoryStatus) => {
-    if (!editItem) return;
-    setItems(all => all.map(i => i.id === editItem.id ? {
-      ...i, status,
-      location: status === "Available" ? (editItem.location === "Intake" ? "Bay —" : editItem.location) : editItem.location,
-    } : i));
-    notify(`${editItem.name} marked as ${status}`);
-    setEditItem(null);
+    saveItemDetail(status);
   };
 
   const openReqDetail = (r: Request) => { setReqDetail(r); setDeclineNote(""); };
@@ -1498,7 +1503,7 @@ export default function App() {
                   placeholder="Search term…" aria-label="Search furniture inventory" />
               </div>
               <div className="filter-tabs" role="group" aria-label="Filter by item status">
-                {(["All", "To assess", "Available", "Reserved", "Allocated", "Collected"] as const).map(f => (
+                {(["All", "To assess", "Available", "Reserved", "Allocated", "Collected", "Unavailable"] as const).map(f => (
                   <button key={f} className={itemFilter === f ? "active" : ""} onClick={() => setItemFilter(f)} aria-pressed={itemFilter === f}>
                     {f}
                     {f === "To assess" && items.filter(i => i.status === "To assess").length > 0 && <b>{items.filter(i => i.status === "To assess").length}</b>}
@@ -1529,7 +1534,7 @@ export default function App() {
                       <td>
                         <div className="table-actions">
                           <button className="row-button" aria-label={`Open details for ${item.name}`}
-                            onClick={e => { e.stopPropagation(); openItemDetail(item); }}>Details</button>
+                            onClick={e => { e.stopPropagation(); openItemDetail(item); }}>{item.status === "To assess" ? "Complete record" : "Edit details"}</button>
                         </div>
                       </td>
                     </tr>
@@ -1944,6 +1949,12 @@ export default function App() {
                 <button className="primary form-submit" onClick={saveOfferReview}>
                   Save review <Icon name="check" size={16} aria-hidden="true" />
                 </button>
+                {items.some(i => i.sourceOfferId === reviewOffer.id) && (
+                  <button className="row-button" style={{ marginTop: 12 }} onClick={() => {
+                    const offerId = reviewOffer.id;
+                    setReviewOffer(null); go("inventory"); setItemFilter("All"); setSearch(offerId);
+                  }}>Complete furniture records →</button>
+                )}
               </div>
             </div>
           </div>
@@ -1981,27 +1992,64 @@ export default function App() {
                 </div>
               </div>
               <div className="sheet-req-form">
-                <h3 className="sheet-req-title">Item notes</h3>
+                <h3 className="sheet-req-title">Edit furniture record</h3>
+                {editItem.status === "To assess" && <p className="muted-cell" style={{ marginBottom: 16 }}>Check the donated details, complete the assessment, then make this item available to caseworkers.</p>}
+                <div className="d-field">
+                  <label className="d-label" htmlFor="edit-name">Item name</label>
+                  <input id="edit-name" className="d-input" value={editItem.name} onChange={e => setEditItem({ ...editItem, name: e.target.value })} />
+                </div>
+                <div className="d-row">
+                  <div className="d-field">
+                    <label className="d-label" htmlFor="edit-category">Category</label>
+                    <select id="edit-category" className="d-input" value={editItem.category} onChange={e => setEditItem({ ...editItem, category: e.target.value })}>
+                      {["Lounge", "Bedroom", "Dining", "Storage", "Living"].map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="d-field">
+                    <label className="d-label" htmlFor="edit-condition">Condition</label>
+                    <select id="edit-condition" className="d-input" value={editItem.condition} onChange={e => setEditItem({ ...editItem, condition: e.target.value })}>
+                      <option value="">Select condition</option>
+                      {["Very good", "Good", "Fair", "Poor"].map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="d-row">
+                  <div className="d-field">
+                    <label className="d-label" htmlFor="edit-dimensions">Dimensions (cm)</label>
+                    <input id="edit-dimensions" className="d-input" placeholder="W90 × D30 × H180 cm" value={editItem.dimensions} onChange={e => setEditItem({ ...editItem, dimensions: e.target.value })} />
+                  </div>
+                  <div className="d-field">
+                    <label className="d-label" htmlFor="edit-location">Storage location</label>
+                    <input id="edit-location" className="d-input" value={editItem.location} onChange={e => setEditItem({ ...editItem, location: e.target.value })} />
+                  </div>
+                </div>
                 <div className="d-field">
                   <label className="d-label" htmlFor="edit-desc">Description</label>
                   <textarea id="edit-desc" className="d-input d-textarea" value={editDesc}
                     onChange={e => setEditDesc(e.target.value)} rows={3} />
                 </div>
                 <div className="d-field">
-                  <label className="d-label" htmlFor="edit-concerns">Movement concerns</label>
+                  <label className="d-label" htmlFor="edit-safe">Safe to move?</label>
+                  <select id="edit-safe" className="d-input" value={editItem.safeToMove === undefined ? "" : String(editItem.safeToMove)} onChange={e => setEditItem({ ...editItem, safeToMove: e.target.value === "" ? undefined : e.target.value === "true" })}>
+                    <option value="">Not yet assessed</option><option value="true">Yes</option><option value="false">No</option>
+                  </select>
+                </div>
+                <div className="d-field">
+                  <label className="d-label" htmlFor="edit-concerns">Handling concerns (optional)</label>
                   <input id="edit-concerns" className="d-input" value={editConcerns}
                     onChange={e => setEditConcerns(e.target.value)}
                     placeholder="e.g. Disassembly required, heavy" />
                 </div>
-                <button className="primary" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }} onClick={saveItemDetail}>
-                  Save notes <Icon name="check" size={16} aria-hidden="true" />
+                {itemError && <p role="alert" style={{ color: "#8b2020", marginBottom: 12 }}>{itemError}</p>}
+                <button className="primary" style={{ width: "100%", justifyContent: "center", marginBottom: 16 }} onClick={() => saveItemDetail()}>
+                  {editItem.status === "To assess" ? "Save draft" : "Save changes"} <Icon name="check" size={16} aria-hidden="true" />
                 </button>
                 {editItem.status !== "Allocated" && editItem.status !== "Collected" && (
                   <>
                     <h3 className="sheet-req-title">Change status</h3>
                     <div className="status-btn-group" role="group" aria-label="Change item status">
                       {(editItem.status === "To assess" || editItem.status === "Reserved" || editItem.status === "Unavailable") && (
-                        <button className="status-btn active" onClick={() => changeItemStatus("Available")} aria-label="Mark as Available">Mark Available</button>
+                        <button className="status-btn active" onClick={() => changeItemStatus("Available")}>Save &amp; make available</button>
                       )}
                       {editItem.status === "Available" && (
                         <button className="status-btn" onClick={() => changeItemStatus("Reserved")} aria-label="Mark as Reserved">Mark Reserved</button>
@@ -2012,7 +2060,7 @@ export default function App() {
                     </div>
                     {editItem.status === "To assess" && (
                       <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 10, lineHeight: 1.5 }}>
-                        "Mark Available" makes this item visible to caseworkers.
+                        "Save & make available" saves your edits and makes this item visible to caseworkers.
                       </p>
                     )}
                   </>
